@@ -1,7 +1,6 @@
-const cloudinary = require("cloudinary").v2;
+const cloudinary = require("cloudinary").v2; // Keep the .v2 here
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
-// This one file handles everything for the whole app
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
   api_key: process.env.CLOUDINARY_KEY,
@@ -12,7 +11,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "sipsara_uploads",
-    resource_type: "auto", // CRITICAL: This allows both PDFs and Images
+    resource_type: "auto", 
     allowed_formats: ["jpg", "png", "jpeg", "pdf"],
   },
 });
