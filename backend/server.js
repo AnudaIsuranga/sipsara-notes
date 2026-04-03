@@ -17,9 +17,13 @@ const noteRoutes = require("./routes/noteRoutes");
 const app = express();
 
 // 4. Middleware Setup
-// REPLACE "https://your-app-name.vercel.app" with your actual Vercel URL later!
+// UPDATED: Now allows your live Vercel site to bypass the CORS "security guard"
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://your-app-name.vercel.app"], 
+  origin: [
+    "http://localhost:5173",             // Allows your laptop
+    "https://sipsara-notes.vercel.app",  // Your actual Vercel URL
+    process.env.FRONTEND_URL             // Reads the variable you set on Render
+  ], 
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"]
