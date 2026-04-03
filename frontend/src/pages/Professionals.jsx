@@ -4,11 +4,15 @@ import axios from "axios";
 export default function Professionals() {
   const [teachers, setTeachers] = useState([]);
 
+  // 1. Get the dynamic API URL for Vercel
+  const API_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
-    axios.get("http://localhost:5000/api/teachers/")
+    // 2. Use the dynamic API URL instead of localhost
+    axios.get(`${API_URL}/api/teachers/`)
       .then(res => setTeachers(res.data))
       .catch(err => console.error("Error fetching professionals:", err));
-  }, []);
+  }, [API_URL]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -23,8 +27,9 @@ export default function Professionals() {
             {teachers.map(t => (
               <div key={t._id} className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-300 group">
                 <div className="relative h-80 overflow-hidden">
+                  {/* 3. Removed localhost. Using Cloudinary full URL directly */}
                   <img 
-                    src={`http://localhost:5000${t.photo}`} 
+                    src={t.photo} 
                     alt={t.name} 
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />

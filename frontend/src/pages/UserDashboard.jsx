@@ -7,15 +7,21 @@ export default function UserDashboard() {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
+  // 1. Get the dynamic API URL for Vercel
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const handleChangePassword = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
+      
+      // 2. Use the dynamic API URL instead of localhost
       await axios.put(
-        "http://localhost:5000/api/auth/change-password",
+        `${API_URL}/api/auth/change-password`,
         { oldPassword, newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      
       alert("✅ Password changed successfully!");
       setOldPassword("");
       setNewPassword("");
