@@ -7,7 +7,6 @@ export default function Papers() {
   const [selectedLevel, setSelectedLevel] = useState(null); 
   const [selectedSubject, setSelectedSubject] = useState(null);
 
-  // 1. Get the dynamic API URL for Vercel
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
@@ -123,15 +122,23 @@ export default function Papers() {
                   <h3 className="text-2xl font-bold text-gray-900 mb-6 leading-tight h-16 overflow-hidden uppercase tracking-tight">
                     {paper.title}
                   </h3>
-                  {/* FIX: Removed localhost. Using Cloudinary link directly */}
+                  
+                  {/* 🔒 THE FIX: Forcing HTTPS so the browser doesn't block it */}
                   <a 
-                    href={paper.fileUrl || paper.file} 
+                    href={paper.fileUrl ? paper.fileUrl.replace("http://", "https://") : "#"} 
                     target="_blank" 
                     rel="noopener noreferrer" 
+                    onClick={(e) => {
+                      if (!paper.fileUrl) {
+                        e.preventDefault();
+                        alert("The paper link is missing. Please re-upload this paper.");
+                      }
+                    }}
                     className="w-full bg-red-600 text-white text-center py-4 rounded-2xl font-black hover:bg-red-700 transition-colors block shadow-lg"
                   >
                     Download Paper
                   </a>
+
                 </div>
               </div>
             )) : (

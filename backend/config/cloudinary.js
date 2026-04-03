@@ -5,6 +5,7 @@ cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
   api_key: process.env.CLOUDINARY_KEY,
   api_secret: process.env.CLOUDINARY_SECRET,
+  secure: true // 🔒 THE MAGIC FIX: This forces Cloudinary to generate HTTPS links!
 });
 
 const storage = new CloudinaryStorage({
