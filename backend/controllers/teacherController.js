@@ -2,22 +2,26 @@ const Teacher = require("../models/Teacher");
 
 exports.addTeacher = async (req, res) => {
   try {
-    // req.file.path is the FULL HTTPS URL provided by Cloudinary
-    const photo = req.file ? req.file.path : "";
-
-    if (!photo) {
-      return res.status(400).json({ message: "Photo upload failed. Please try again." });
+    // Check if the file actually reached the server
+    if (!req.file) {
+      return res.status(400).json({ message: "No photo uploaded. Please select an image." });
     }
 
-    const teacher = await Teacher.create({ 
-      ...req.body, 
-      photo // This is now a secure https link
+    // IMPORTANT: Cloudinary uses 'path', not 'filename'
+    const photoUrl = req.file.path; 
+
+    const newTeacher = await Teacher.create({
+      name: req.body.name,
+      subject: req.body.subject,
+      contact: req.body.contact,
+      description: req.body.description,
+      photo: photoUrl // This will be the https://res.cloudinary link
     });
 
-    res.status(201).json(teacher);
+    res.status(201).json(newTeacher);
   } catch (error) {
-    console.error("Add Teacher Error:", error);
-    res.status(500).json({ message: "Failed to add professional" });
+    console.error("Teacher Upload Error:", error);
+    res.status(500).json({ message: "Server error during upload" });
   }
 };
 
