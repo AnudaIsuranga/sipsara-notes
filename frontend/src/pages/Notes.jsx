@@ -36,6 +36,12 @@ export default function Notes() {
     else setSelectedLevel(null);
   };
 
+  // BULLETPROOF LINK HANDLER
+  const getSecureLink = (item) => {
+    const rawLink = item.fileUrl || item.file; // Checks both possible database names
+    return rawLink ? rawLink.replace("http://", "https://") : "#";
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-6 md:p-12">
       <div className="max-w-7xl mx-auto">
@@ -123,15 +129,14 @@ export default function Notes() {
                     {note.title}
                   </h3>
                   
-                  {/* 🔒 THE FIX: Forcing HTTPS so the browser doesn't block it */}
                   <a 
-                    href={note.fileUrl ? note.fileUrl.replace("http://", "https://") : "#"} 
+                    href={getSecureLink(note)} 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     onClick={(e) => {
-                      if (!note.fileUrl) {
+                      if (getSecureLink(note) === "#") {
                         e.preventDefault();
-                        alert("The file link is missing. Please re-upload this note.");
+                        alert("The file link is missing. Please re-upload this note in the Admin panel.");
                       }
                     }}
                     className="w-full bg-gray-900 text-white text-center py-4 rounded-2xl font-black hover:bg-blue-600 transition-colors block shadow-lg"

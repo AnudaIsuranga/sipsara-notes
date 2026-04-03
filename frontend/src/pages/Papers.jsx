@@ -36,6 +36,12 @@ export default function Papers() {
     else setSelectedLevel(null);
   };
 
+  // BULLETPROOF LINK HANDLER
+  const getSecureLink = (item) => {
+    const rawLink = item.fileUrl || item.file; // Checks both possible database names
+    return rawLink ? rawLink.replace("http://", "https://") : "#";
+  };
+
   return (
     <div className="min-h-screen bg-[#FFFBFB] p-6 md:p-12">
       <div className="max-w-7xl mx-auto">
@@ -123,15 +129,14 @@ export default function Papers() {
                     {paper.title}
                   </h3>
                   
-                  {/* 🔒 THE FIX: Forcing HTTPS so the browser doesn't block it */}
                   <a 
-                    href={paper.fileUrl ? paper.fileUrl.replace("http://", "https://") : "#"} 
+                    href={getSecureLink(paper)} 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     onClick={(e) => {
-                      if (!paper.fileUrl) {
+                      if (getSecureLink(paper) === "#") {
                         e.preventDefault();
-                        alert("The paper link is missing. Please re-upload this paper.");
+                        alert("The paper link is missing. Please re-upload this paper in the Admin panel.");
                       }
                     }}
                     className="w-full bg-red-600 text-white text-center py-4 rounded-2xl font-black hover:bg-red-700 transition-colors block shadow-lg"
