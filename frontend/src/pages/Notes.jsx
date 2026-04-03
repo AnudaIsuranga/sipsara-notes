@@ -7,27 +7,30 @@ export default function Notes() {
   const [selectedLevel, setSelectedLevel] = useState(null); 
   const [selectedSubject, setSelectedSubject] = useState(null);
 
+  // 1. Get the dynamic API URL for Vercel
+  const API_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/subjects/");
+        const res = await axios.get(`${API_URL}/api/subjects/`);
         setSubjects(res.data);
       } catch (err) { console.error("Error loading subjects", err); }
     };
     fetchSubjects();
-  }, []);
+  }, [API_URL]);
 
   useEffect(() => {
     if (selectedSubject) {
       const fetchNotes = async () => {
         try {
-          const res = await axios.get(`http://localhost:5000/api/notes?subjectId=${selectedSubject._id}&category=Note`);
+          const res = await axios.get(`${API_URL}/api/notes?subjectId=${selectedSubject._id}&category=Note`);
           setNotes(res.data);
         } catch (err) { console.error("Error loading notes", err); }
       };
       fetchNotes();
     }
-  }, [selectedSubject]);
+  }, [selectedSubject, API_URL]);
 
   const goBack = () => {
     if (selectedSubject) setSelectedSubject(null);
@@ -120,10 +123,11 @@ export default function Notes() {
                   <h3 className="text-2xl font-bold text-gray-900 mb-6 leading-tight h-16 overflow-hidden">
                     {note.title}
                   </h3>
+                  {/* FIX: Removed localhost. Using Cloudinary link directly */}
                   <a 
-                    href={`http://localhost:5000${note.fileUrl}`} 
+                    href={note.fileUrl || note.file} 
                     target="_blank" 
-                    rel="noreferrer" 
+                    rel="noopener noreferrer" 
                     className="w-full bg-gray-900 text-white text-center py-4 rounded-2xl font-black hover:bg-blue-600 transition-colors block shadow-lg"
                   >
                     Open Document

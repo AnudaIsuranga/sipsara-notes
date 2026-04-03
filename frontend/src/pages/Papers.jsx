@@ -7,27 +7,30 @@ export default function Papers() {
   const [selectedLevel, setSelectedLevel] = useState(null); 
   const [selectedSubject, setSelectedSubject] = useState(null);
 
+  // 1. Get the dynamic API URL for Vercel
+  const API_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/subjects/");
+        const res = await axios.get(`${API_URL}/api/subjects/`);
         setSubjects(res.data);
       } catch (err) { console.error(err); }
     };
     fetchSubjects();
-  }, []);
+  }, [API_URL]);
 
   useEffect(() => {
     if (selectedSubject) {
       const fetchPapers = async () => {
         try {
-          const res = await axios.get(`http://localhost:5000/api/notes?subjectId=${selectedSubject._id}&category=Paper`);
+          const res = await axios.get(`${API_URL}/api/notes?subjectId=${selectedSubject._id}&category=Paper`);
           setPapers(res.data);
         } catch (err) { console.error(err); }
       };
       fetchPapers();
     }
-  }, [selectedSubject]);
+  }, [selectedSubject, API_URL]);
 
   const goBack = () => {
     if (selectedSubject) setSelectedSubject(null);
@@ -120,10 +123,11 @@ export default function Papers() {
                   <h3 className="text-2xl font-bold text-gray-900 mb-6 leading-tight h-16 overflow-hidden uppercase tracking-tight">
                     {paper.title}
                   </h3>
+                  {/* FIX: Removed localhost. Using Cloudinary link directly */}
                   <a 
-                    href={`http://localhost:5000${paper.fileUrl}`} 
+                    href={paper.fileUrl || paper.file} 
                     target="_blank" 
-                    rel="noreferrer" 
+                    rel="noopener noreferrer" 
                     className="w-full bg-red-600 text-white text-center py-4 rounded-2xl font-black hover:bg-red-700 transition-colors block shadow-lg"
                   >
                     Download Paper
