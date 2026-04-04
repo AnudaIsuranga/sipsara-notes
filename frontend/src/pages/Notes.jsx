@@ -12,39 +12,36 @@ export default function Notes() {
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/subjects/`);
+        const res = await axios.get(`${API_URL}/api/subjects`);
         setSubjects(res.data);
       } catch (err) {
         console.error("Error loading subjects", err);
       }
     };
+
     fetchSubjects();
   }, [API_URL]);
 
   useEffect(() => {
-    if (selectedSubject) {
-      const fetchNotes = async () => {
-        try {
-          const res = await axios.get(
-            `${API_URL}/api/notes?subjectId=${selectedSubject._id}&category=Note`
-          );
-          setNotes(res.data);
-        } catch (err) {
-          console.error("Error loading notes", err);
-        }
-      };
-      fetchNotes();
-    }
+    if (!selectedSubject) return;
+
+    const fetchNotes = async () => {
+      try {
+        const res = await axios.get(
+          `${API_URL}/api/notes?subjectId=${selectedSubject._id}&category=Note`
+        );
+        setNotes(res.data);
+      } catch (err) {
+        console.error("Error loading notes", err);
+      }
+    };
+
+    fetchNotes();
   }, [selectedSubject, API_URL]);
 
   const goBack = () => {
     if (selectedSubject) setSelectedSubject(null);
     else setSelectedLevel(null);
-  };
-
-  const getFileLink = (item) => {
-    if (!item.fileUrl) return "#";
-    return item.fileUrl;
   };
 
   return (
@@ -61,14 +58,18 @@ export default function Notes() {
             >
               Library
             </span>
+
             {selectedLevel && (
               <>
-                <span>/</span> <span className="text-gray-600">{selectedLevel}</span>
+                <span>/</span>
+                <span className="text-gray-600">{selectedLevel}</span>
               </>
             )}
+
             {selectedSubject && (
               <>
-                <span>/</span> <span className="text-blue-600">{selectedSubject.name}</span>
+                <span>/</span>
+                <span className="text-blue-600">{selectedSubject.name}</span>
               </>
             )}
           </div>
@@ -101,9 +102,6 @@ export default function Notes() {
             >
               <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-800 opacity-90"></div>
               <div className="relative z-10 h-full flex flex-col justify-center items-center text-white">
-                <span className="text-8xl font-black opacity-20 absolute -right-4 -bottom-4 italic">
-                  OL
-                </span>
                 <h2 className="text-6xl font-black">GCE O/L</h2>
                 <p className="font-bold text-blue-100 mt-2">Ordinary Level Study Materials</p>
               </div>
@@ -115,9 +113,6 @@ export default function Notes() {
             >
               <div className="absolute inset-0 bg-gradient-to-br from-indigo-400 to-indigo-800 opacity-90"></div>
               <div className="relative z-10 h-full flex flex-col justify-center items-center text-white">
-                <span className="text-8xl font-black opacity-20 absolute -right-4 -bottom-4 italic">
-                  AL
-                </span>
                 <h2 className="text-6xl font-black">GCE A/L</h2>
                 <p className="font-bold text-indigo-100 mt-2">Advanced Level Study Materials</p>
               </div>
@@ -154,6 +149,7 @@ export default function Notes() {
                   className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden group hover:shadow-2xl transition-all"
                 >
                   <div className="h-3 bg-blue-600"></div>
+
                   <div className="p-8">
                     <div className="flex justify-between items-center mb-4">
                       <span className="bg-blue-50 text-blue-600 text-xs font-black px-3 py-1 rounded-lg uppercase">
@@ -167,15 +163,9 @@ export default function Notes() {
                     </h3>
 
                     <a
-                      href={getFileLink(note)}
+                      href={note.fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={(e) => {
-                        if (getFileLink(note) === "#") {
-                          e.preventDefault();
-                          alert("The file link is missing. Please re-upload this note.");
-                        }
-                      }}
                       className="w-full bg-gray-900 text-white text-center py-4 rounded-2xl font-black hover:bg-blue-600 transition-colors block shadow-lg"
                     >
                       Open Document

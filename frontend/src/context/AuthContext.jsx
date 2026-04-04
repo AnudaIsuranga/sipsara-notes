@@ -9,10 +9,10 @@ export const AuthProvider = ({ children }) => {
     return userInfo ? JSON.parse(userInfo) : null;
   });
 
-  const login = (userData) => {
-    setUser(userData.user);
-    localStorage.setItem("userInfo", JSON.stringify(userData.user));
-    localStorage.setItem("token", userData.token);
+  const login = (data) => {
+    setUser(data.user);
+    localStorage.setItem("userInfo", JSON.stringify(data.user));
+    localStorage.setItem("token", data.token);
   };
 
   const logout = () => {

@@ -8,29 +8,30 @@ cloudinary.config({
   secure: true,
 });
 
-// ==============================
-// STORAGE FOR TEACHER IMAGES
-// ==============================
 const teacherImageStorage = new CloudinaryStorage({
   cloudinary,
-  params: async (req, file) => ({
+  params: async () => ({
     folder: "sipsara_teachers",
     resource_type: "image",
     allowed_formats: ["jpg", "jpeg", "png", "webp"],
   }),
 });
 
-// ==============================
-// STORAGE FOR NOTE/PAPER PDFs
-// ==============================
 const pdfStorage = new CloudinaryStorage({
   cloudinary,
-  params: async (req, file) => ({
-    folder: "sipsara_notes",
-    resource_type: "raw",
-    format: "pdf",
-    public_id: `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, "").replace(/\s+/g, "-")}`,
-  }),
+  params: async (req, file) => {
+    const originalName = file.originalname
+      .replace(/\.[^/.]+$/, "")
+      .replace(/\s+/g, "-")
+      .replace(/[^a-zA-Z0-9-_]/g, "");
+
+    return {
+      folder: "sipsara_notes",
+      resource_type: "raw",
+      format: "pdf",
+      public_id: `${Date.now()}-${originalName}`,
+    };
+  },
 });
 
 module.exports = {

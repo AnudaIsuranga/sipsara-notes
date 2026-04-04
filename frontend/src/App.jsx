@@ -5,8 +5,8 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Notes from "./pages/Notes";
-import Papers from "./pages/Papers"; 
-import Professionals from "./pages/Professionals"; // NEW IMPORT
+import Papers from "./pages/Papers";
+import Professionals from "./pages/Professionals";
 import Admin from "./pages/Admin";
 import UserDashboard from "./pages/UserDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -17,29 +17,53 @@ function AppContent() {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      
+
       <main className="flex-grow">
         <Routes>
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-          
-          <Route 
-            path="/notes" 
-            element={<ProtectedRoute><Notes key={location.key} /></ProtectedRoute>} 
+          <Route
+            path="/notes"
+            element={
+              <ProtectedRoute>
+                <Notes key={location.key} />
+              </ProtectedRoute>
+            }
           />
-          <Route 
-            path="/papers" 
-            element={<ProtectedRoute><Papers key={location.key} /></ProtectedRoute>} 
+          <Route
+            path="/papers"
+            element={
+              <ProtectedRoute>
+                <Papers key={location.key} />
+              </ProtectedRoute>
+            }
           />
-          <Route 
-            path="/professionals" 
-            element={<ProtectedRoute><Professionals key={location.key} /></ProtectedRoute>} 
+          <Route
+            path="/professionals"
+            element={
+              <ProtectedRoute>
+                <Professionals key={location.key} />
+              </ProtectedRoute>
+            }
           />
-          
-          <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-          <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <Admin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <UserDashboard />
+              </ProtectedRoute>
+            }
+          />
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

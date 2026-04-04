@@ -38,9 +38,9 @@ export default function Admin() {
     const fetchData = async () => {
       try {
         const [sRes, nRes, tRes] = await Promise.all([
-          axios.get(`${API_URL}/api/subjects/`),
-          axios.get(`${API_URL}/api/notes/`),
-          axios.get(`${API_URL}/api/teachers/`),
+          axios.get(`${API_URL}/api/subjects`),
+          axios.get(`${API_URL}/api/notes`),
+          axios.get(`${API_URL}/api/teachers`),
         ]);
 
         setSubjects(sRes.data);
@@ -85,8 +85,7 @@ export default function Admin() {
         },
       });
 
-      alert("✅ PDF uploaded successfully!");
-
+      alert("PDF uploaded successfully!");
       setTitle("");
       setCategory("Note");
       setMedium("Sinhala");
@@ -94,7 +93,7 @@ export default function Admin() {
       setRefreshTrigger((p) => p + 1);
     } catch (err) {
       console.error("PDF upload error:", err);
-      alert(err.response?.data?.message || "❌ PDF upload failed");
+      alert(err.response?.data?.message || "PDF upload failed");
     }
   };
 
@@ -123,8 +122,7 @@ export default function Admin() {
         },
       });
 
-      alert("✅ Professional added successfully!");
-
+      alert("Professional added successfully!");
       setTName("");
       setTSubject("");
       setTContact("");
@@ -133,7 +131,7 @@ export default function Admin() {
       setRefreshTrigger((p) => p + 1);
     } catch (err) {
       console.error("Teacher add error:", err);
-      alert(err.response?.data?.message || "❌ Failed to add professional");
+      alert(err.response?.data?.message || "Failed to add professional");
     }
   };
 
@@ -144,9 +142,7 @@ export default function Admin() {
       const token = localStorage.getItem("token");
 
       await axios.delete(`${API_URL}/api/teachers/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       setRefreshTrigger((p) => p + 1);
@@ -163,9 +159,7 @@ export default function Admin() {
       const token = localStorage.getItem("token");
 
       await axios.delete(`${API_URL}/api/notes/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       setRefreshTrigger((p) => p + 1);
@@ -263,7 +257,10 @@ export default function Admin() {
 
               <select
                 value={selectedLevel}
-                onChange={(e) => setSelectedLevel(e.target.value)}
+                onChange={(e) => {
+                  setSelectedLevel(e.target.value);
+                  setSelectedSubject("");
+                }}
                 className="border p-3 rounded-xl font-bold bg-blue-50"
               >
                 <option value="O/L">GCE O/L</option>
@@ -278,6 +275,7 @@ export default function Admin() {
                 className="border p-3 rounded-xl"
                 required
               >
+                <option value="">Select Subject</option>
                 {subjects
                   .filter((s) => s.level === selectedLevel)
                   .map((s) => (
@@ -299,9 +297,7 @@ export default function Admin() {
             </div>
 
             <div className="bg-gray-50 p-4 rounded-xl border-2 border-dashed border-gray-300">
-              <label className="block text-sm font-bold text-gray-600 mb-2">
-                PDF Document
-              </label>
+              <label className="block text-sm font-bold text-gray-600 mb-2">PDF Document</label>
               <input
                 type="file"
                 accept="application/pdf"

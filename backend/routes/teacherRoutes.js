@@ -1,13 +1,18 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
+
 const { teacherImageStorage } = require("../config/cloudinary");
-const { addTeacher, getTeachers, deleteTeacher } = require("../controllers/teacherController");
+const {
+  addTeacher,
+  getTeachers,
+  deleteTeacher,
+} = require("../controllers/teacherController");
 const { protect, admin } = require("../middleware/authMiddleware");
 
 const upload = multer({
   storage: teacherImageStorage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
 router.get("/", getTeachers);

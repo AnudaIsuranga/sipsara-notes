@@ -1,20 +1,16 @@
 const express = require("express");
 const router = express.Router();
 
-// IMPORT: These names MUST match the exports in the controller file exactly
-const { 
-  getSubjects, 
-  addSubject, 
-  seedSubjects 
+const {
+  getSubjects,
+  addSubject,
+  seedSubjects,
 } = require("../controllers/subjectController");
 
-// Route 1: Get all
+const { protect, admin } = require("../middleware/authMiddleware");
+
 router.get("/", getSubjects);
-
-// Route 2: Add one
-router.post("/add", addSubject);
-
-// Route 3: Seed (This is likely your Line 13)
-router.post("/seed", seedSubjects);
+router.post("/add", protect, admin, addSubject);
+router.post("/seed", protect, admin, seedSubjects);
 
 module.exports = router;

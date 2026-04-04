@@ -7,7 +7,7 @@ export default function Professionals() {
 
   useEffect(() => {
     axios
-      .get(`${API_URL}/api/teachers/`)
+      .get(`${API_URL}/api/teachers`)
       .then((res) => setTeachers(res.data))
       .catch((err) => console.error("Error fetching professionals:", err));
   }, [API_URL]);
@@ -60,7 +60,7 @@ export default function Professionals() {
 
                     <a
                       href={`tel:${t.contact}`}
-                      className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition shadow-md active:scale-95"
+                      className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition shadow-md"
                     >
                       Call Now
                     </a>

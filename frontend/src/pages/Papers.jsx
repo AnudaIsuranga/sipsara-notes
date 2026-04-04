@@ -12,39 +12,36 @@ export default function Papers() {
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/subjects/`);
+        const res = await axios.get(`${API_URL}/api/subjects`);
         setSubjects(res.data);
       } catch (err) {
         console.error(err);
       }
     };
+
     fetchSubjects();
   }, [API_URL]);
 
   useEffect(() => {
-    if (selectedSubject) {
-      const fetchPapers = async () => {
-        try {
-          const res = await axios.get(
-            `${API_URL}/api/notes?subjectId=${selectedSubject._id}&category=Paper`
-          );
-          setPapers(res.data);
-        } catch (err) {
-          console.error(err);
-        }
-      };
-      fetchPapers();
-    }
+    if (!selectedSubject) return;
+
+    const fetchPapers = async () => {
+      try {
+        const res = await axios.get(
+          `${API_URL}/api/notes?subjectId=${selectedSubject._id}&category=Paper`
+        );
+        setPapers(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchPapers();
   }, [selectedSubject, API_URL]);
 
   const goBack = () => {
     if (selectedSubject) setSelectedSubject(null);
     else setSelectedLevel(null);
-  };
-
-  const getFileLink = (item) => {
-    if (!item.fileUrl) return "#";
-    return item.fileUrl;
   };
 
   return (
@@ -61,14 +58,18 @@ export default function Papers() {
             >
               Archives
             </span>
+
             {selectedLevel && (
               <>
-                <span>/</span> <span className="text-gray-400">{selectedLevel}</span>
+                <span>/</span>
+                <span className="text-gray-400">{selectedLevel}</span>
               </>
             )}
+
             {selectedSubject && (
               <>
-                <span>/</span> <span className="text-red-600">{selectedSubject.name}</span>
+                <span>/</span>
+                <span className="text-red-600">{selectedSubject.name}</span>
               </>
             )}
           </div>
@@ -101,9 +102,6 @@ export default function Papers() {
             >
               <div className="absolute inset-0 bg-gradient-to-br from-red-400 to-red-800 opacity-90"></div>
               <div className="relative z-10 h-full flex flex-col justify-center items-center text-white text-center px-4">
-                <span className="text-8xl font-black opacity-10 absolute left-4 top-4 italic uppercase">
-                  Archives
-                </span>
                 <h2 className="text-6xl font-black">GCE O/L</h2>
                 <p className="font-bold text-red-100 mt-2">Official Past Paper Collections</p>
               </div>
@@ -115,9 +113,6 @@ export default function Papers() {
             >
               <div className="absolute inset-0 bg-gradient-to-br from-red-700 to-black opacity-90"></div>
               <div className="relative z-10 h-full flex flex-col justify-center items-center text-white text-center px-4">
-                <span className="text-8xl font-black opacity-10 absolute left-4 top-4 italic uppercase">
-                  Archives
-                </span>
                 <h2 className="text-6xl font-black">GCE A/L</h2>
                 <p className="font-bold text-red-200 mt-2">Advanced Level Exam Papers</p>
               </div>
@@ -154,6 +149,7 @@ export default function Papers() {
                   className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden group hover:shadow-2xl transition-all"
                 >
                   <div className="h-3 bg-red-600"></div>
+
                   <div className="p-8">
                     <div className="flex justify-between items-center mb-4">
                       <span className="bg-red-50 text-red-600 text-xs font-black px-3 py-1 rounded-lg uppercase">
@@ -167,15 +163,9 @@ export default function Papers() {
                     </h3>
 
                     <a
-                      href={getFileLink(paper)}
+                      href={paper.fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={(e) => {
-                        if (getFileLink(paper) === "#") {
-                          e.preventDefault();
-                          alert("The paper link is missing. Please re-upload this paper.");
-                        }
-                      }}
                       className="w-full bg-red-600 text-white text-center py-4 rounded-2xl font-black hover:bg-red-700 transition-colors block shadow-lg"
                     >
                       Open Paper
