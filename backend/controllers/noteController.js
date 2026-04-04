@@ -68,7 +68,7 @@ exports.deleteNote = async (req, res) => {
 
     if (note.filePublicId) {
       await cloudinary.uploader.destroy(note.filePublicId, {
-        resource_type: "raw",
+        resource_type: "image",
         invalidate: true,
       });
     }

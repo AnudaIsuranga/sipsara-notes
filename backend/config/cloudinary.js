@@ -8,6 +8,9 @@ cloudinary.config({
   secure: true,
 });
 
+// ==============================
+// STORAGE FOR TEACHER IMAGES
+// ==============================
 const teacherImageStorage = new CloudinaryStorage({
   cloudinary,
   params: async () => ({
@@ -17,6 +20,10 @@ const teacherImageStorage = new CloudinaryStorage({
   }),
 });
 
+// ==============================
+// STORAGE FOR NOTE/PAPER PDFs
+// IMPORTANT: use image, not raw
+// ==============================
 const pdfStorage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
@@ -27,7 +34,7 @@ const pdfStorage = new CloudinaryStorage({
 
     return {
       folder: "sipsara_notes",
-      resource_type: "raw",
+      resource_type: "image",
       format: "pdf",
       public_id: `${Date.now()}-${originalName}`,
     };
