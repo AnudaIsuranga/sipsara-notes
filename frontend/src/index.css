@@ -88,3 +88,18 @@ body {
 .hero-fade-up-delay-3 {
   animation: heroFadeUp 1.25s ease-out both;
 }
+
+@keyframes authFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-page-enter {
+  animation: authFadeUp 0.7s ease-out both;
+}
