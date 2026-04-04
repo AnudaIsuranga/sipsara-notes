@@ -1,20 +1,40 @@
-const cloudinary = require("cloudinary").v2; // Keep the .v2 here
+const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
   api_key: process.env.CLOUDINARY_KEY,
   api_secret: process.env.CLOUDINARY_SECRET,
-  secure: true // 🔒 THE MAGIC FIX: This forces Cloudinary to generate HTTPS links!
+  secure: true,
 });
 
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "sipsara_uploads",
-    resource_type: "auto", 
-    allowed_formats: ["jpg", "png", "jpeg", "pdf"],
-  },
+// ==============================
+// STORAGE FOR TEACHER IMAGES
+// ==============================
+const teacherImageStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => ({
+    folder: "sipsara_teachers",
+    resource_type: "image",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+  }),
 });
 
-module.exports = { cloudinary, storage };
+// ==============================
+// STORAGE FOR NOTE/PAPER PDFs
+// ==============================
+const pdfStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => ({
+    folder: "sipsara_notes",
+    resource_type: "raw",
+    format: "pdf",
+    public_id: `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, "").replace(/\s+/g, "-")}`,
+  }),
+});
+
+module.exports = {
+  cloudinary,
+  teacherImageStorage,
+  pdfStorage,
+};
