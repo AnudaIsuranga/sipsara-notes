@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
@@ -27,6 +27,8 @@ export default function Admin() {
   const [tPhoto, setTPhoto] = useState(null);
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [activeTab, setActiveTab] = useState("upload");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user || user.role !== "admin") {
@@ -37,6 +39,8 @@ export default function Admin() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
+
         const [sRes, nRes, tRes] = await Promise.all([
           axios.get(`${API_URL}/api/subjects`),
           axios.get(`${API_URL}/api/notes`),
@@ -54,11 +58,20 @@ export default function Admin() {
         });
       } catch (err) {
         console.error("Fetch error:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
   }, [refreshTrigger, selectedLevel, API_URL]);
+
+  const filteredSubjects = useMemo(() => {
+    return subjects.filter((s) => s.level === selectedLevel);
+  }, [subjects, selectedLevel]);
+
+  const noteCount = notes.filter((n) => n.category === "Note").length;
+  const paperCount = notes.filter((n) => n.category === "Paper").length;
 
   const handleNoteUpload = async (e) => {
     e.preventDefault();
@@ -172,212 +185,454 @@ export default function Admin() {
   if (!user || user.role !== "admin") return null;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-8 space-y-10">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10">
-        <div className="bg-white p-8 rounded-3xl shadow-xl border-t-8 border-blue-600">
-          <h2 className="text-3xl font-black mb-8 text-gray-800">Add Professional</h2>
+    <div className="min-h-screen bg-slate-50">
+      <div className="border-b border-slate-200 bg-white/80 backdrop-blur sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-blue-600 uppercase tracking-[0.2em]">
+              Admin Panel
+            </p>
+            <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+              SipsaraNotes Dashboard
+            </h1>
+            <p className="text-slate-500 mt-1">
+              Manage lecturers, notes, papers, and uploaded content in one place.
+            </p>
+          </div>
 
-          <form onSubmit={handleTeacherUpload} className="space-y-4">
-            <input
-              type="text"
-              placeholder="Lecturer Name"
-              className="w-full border p-3 rounded-xl"
-              value={tName}
-              onChange={(e) => setTName(e.target.value)}
-              required
-            />
-
-            <input
-              type="text"
-              placeholder="Subject Specialty"
-              className="w-full border p-3 rounded-xl"
-              value={tSubject}
-              onChange={(e) => setTSubject(e.target.value)}
-              required
-            />
-
-            <input
-              type="text"
-              placeholder="Contact Phone"
-              className="w-full border p-3 rounded-xl"
-              value={tContact}
-              onChange={(e) => setTContact(e.target.value)}
-              required
-            />
-
-            <textarea
-              placeholder="Description / Bio"
-              className="w-full border p-3 rounded-xl h-24"
-              value={tDesc}
-              onChange={(e) => setTDesc(e.target.value)}
-              required
-            />
-
-            <div className="bg-gray-50 p-4 rounded-xl border-2 border-dashed border-gray-300">
-              <label className="block text-sm font-bold text-gray-600 mb-2">
-                Profile Photo
-              </label>
-              <input
-                type="file"
-                accept="image/png,image/jpeg,image/jpg,image/webp"
-                onChange={(e) => setTPhoto(e.target.files[0])}
-                required
-                className="text-sm"
-              />
-            </div>
-
-            <button className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xl hover:bg-blue-700 transition">
-              Save Professional
-            </button>
-          </form>
-        </div>
-
-        <div className="bg-white p-8 rounded-3xl shadow-xl border-t-8 border-green-600">
-          <h2 className="text-3xl font-black mb-8 text-gray-800">Upload Note / Paper</h2>
-
-          <form onSubmit={handleNoteUpload} className="space-y-4">
-            <input
-              type="text"
-              placeholder="File Title"
-              className="w-full border p-3 rounded-xl"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="border p-3 rounded-xl font-bold bg-green-50"
-              >
-                <option value="Note">Upload as Note</option>
-                <option value="Paper">Upload as Paper</option>
-              </select>
-
-              <select
-                value={selectedLevel}
-                onChange={(e) => {
-                  setSelectedLevel(e.target.value);
-                  setSelectedSubject("");
-                }}
-                className="border p-3 rounded-xl font-bold bg-blue-50"
-              >
-                <option value="O/L">GCE O/L</option>
-                <option value="A/L">GCE A/L</option>
-              </select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <select
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-                className="border p-3 rounded-xl"
-                required
-              >
-                <option value="">Select Subject</option>
-                {subjects
-                  .filter((s) => s.level === selectedLevel)
-                  .map((s) => (
-                    <option key={s._id} value={s._id}>
-                      {s.name}
-                    </option>
-                  ))}
-              </select>
-
-              <select
-                value={medium}
-                onChange={(e) => setMedium(e.target.value)}
-                className="border p-3 rounded-xl"
-              >
-                <option value="Sinhala">Sinhala</option>
-                <option value="English">English</option>
-                <option value="Tamil">Tamil</option>
-              </select>
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-xl border-2 border-dashed border-gray-300">
-              <label className="block text-sm font-bold text-gray-600 mb-2">PDF Document</label>
-              <input
-                type="file"
-                accept="application/pdf"
-                className="text-sm"
-                onChange={(e) => setFile(e.target.files[0])}
-                required
-              />
-            </div>
-
-            <button className="w-full bg-green-600 text-white py-4 rounded-2xl font-black text-xl hover:bg-green-700 transition">
-              Upload PDF
-            </button>
-          </form>
+          <div className="bg-gradient-to-r from-slate-900 to-slate-700 text-white rounded-2xl px-5 py-4 shadow-lg">
+            <p className="text-xs uppercase tracking-widest text-slate-300 font-bold">
+              Logged in as
+            </p>
+            <p className="font-black text-lg">{user.name}</p>
+            <p className="text-sm text-slate-300">{user.email}</p>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto bg-white p-8 rounded-3xl shadow-xl">
-        <h2 className="text-3xl font-black mb-8 text-gray-800">Current Professionals</h2>
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          <StatCard title="Total Subjects" value={subjects.length} color="blue" icon="📚" />
+          <StatCard title="Total Professionals" value={teachers.length} color="emerald" icon="👨‍🏫" />
+          <StatCard title="Total Notes" value={noteCount} color="amber" icon="📝" />
+          <StatCard title="Total Papers" value={paperCount} color="rose" icon="📄" />
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {teachers.map((t) => (
-            <div
-              key={t._id}
-              className="flex items-center justify-between p-4 border rounded-2xl bg-gray-50"
-            >
-              <div className="flex items-center space-x-4">
-                <img
-                  src={t.photo}
-                  className="w-14 h-14 rounded-full object-cover shadow-md border-2 border-white"
-                  alt={t.name}
-                  onError={(e) => {
-                    e.target.src = "https://via.placeholder.com/100?text=No+Image";
-                  }}
-                />
-                <div>
-                  <p className="font-bold text-gray-900">{t.name}</p>
-                  <p className="text-xs text-blue-600 font-bold uppercase">{t.subject}</p>
+        <div className="bg-white rounded-3xl p-3 shadow-sm border border-slate-200 flex flex-wrap gap-3">
+          <TabButton
+            active={activeTab === "upload"}
+            onClick={() => setActiveTab("upload")}
+            label="Upload Center"
+          />
+          <TabButton
+            active={activeTab === "teachers"}
+            onClick={() => setActiveTab("teachers")}
+            label="Manage Professionals"
+          />
+          <TabButton
+            active={activeTab === "files"}
+            onClick={() => setActiveTab("files")}
+            label="Manage Files"
+          />
+        </div>
+
+        {loading ? (
+          <div className="bg-white border border-slate-200 rounded-3xl p-10 text-center text-slate-500 font-semibold shadow-sm">
+            Loading dashboard...
+          </div>
+        ) : (
+          <>
+            {activeTab === "upload" && (
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                    <p className="text-sm font-bold uppercase tracking-widest text-blue-100">
+                      Professionals
+                    </p>
+                    <h2 className="text-2xl font-black mt-1">Add New Professional</h2>
+                  </div>
+
+                  <form onSubmit={handleTeacherUpload} className="p-6 space-y-5">
+                    <InputField
+                      label="Lecturer Name"
+                      value={tName}
+                      onChange={setTName}
+                      placeholder="Enter lecturer name"
+                    />
+
+                    <InputField
+                      label="Subject Specialty"
+                      value={tSubject}
+                      onChange={setTSubject}
+                      placeholder="Ex: Combined Maths"
+                    />
+
+                    <InputField
+                      label="Contact Phone"
+                      value={tContact}
+                      onChange={setTContact}
+                      placeholder="Enter contact number"
+                    />
+
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">
+                        Description / Bio
+                      </label>
+                      <textarea
+                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500 focus:bg-white transition h-28 resize-none"
+                        value={tDesc}
+                        onChange={(e) => setTDesc(e.target.value)}
+                        placeholder="Write a short professional description"
+                        required
+                      />
+                    </div>
+
+                    <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-5">
+                      <label className="block text-sm font-bold text-slate-700 mb-2">
+                        Profile Photo
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/jpg,image/webp"
+                        onChange={(e) => setTPhoto(e.target.files[0])}
+                        required
+                        className="block w-full text-sm text-slate-600"
+                      />
+                      <p className="text-xs text-slate-400 mt-2">
+                        Upload JPG, JPEG, PNG, or WEBP
+                      </p>
+                    </div>
+
+                    <button className="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black py-4 transition shadow-lg shadow-blue-200">
+                      Save Professional
+                    </button>
+                  </form>
+                </div>
+
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+                    <p className="text-sm font-bold uppercase tracking-widest text-emerald-100">
+                      Documents
+                    </p>
+                    <h2 className="text-2xl font-black mt-1">Upload Note / Paper</h2>
+                  </div>
+
+                  <form onSubmit={handleNoteUpload} className="p-6 space-y-5">
+                    <InputField
+                      label="File Title"
+                      value={title}
+                      onChange={setTitle}
+                      placeholder="Enter document title"
+                    />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <SelectField
+                        label="Category"
+                        value={category}
+                        onChange={setCategory}
+                        options={[
+                          { label: "Upload as Note", value: "Note" },
+                          { label: "Upload as Paper", value: "Paper" },
+                        ]}
+                      />
+
+                      <SelectField
+                        label="Academic Level"
+                        value={selectedLevel}
+                        onChange={(value) => {
+                          setSelectedLevel(value);
+                          setSelectedSubject("");
+                        }}
+                        options={[
+                          { label: "GCE O/L", value: "O/L" },
+                          { label: "GCE A/L", value: "A/L" },
+                        ]}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">
+                          Subject
+                        </label>
+                        <select
+                          value={selectedSubject}
+                          onChange={(e) => setSelectedSubject(e.target.value)}
+                          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-emerald-500 focus:bg-white transition"
+                          required
+                        >
+                          <option value="">Select Subject</option>
+                          {filteredSubjects.map((s) => (
+                            <option key={s._id} value={s._id}>
+                              {s.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <SelectField
+                        label="Medium"
+                        value={medium}
+                        onChange={setMedium}
+                        options={[
+                          { label: "Sinhala", value: "Sinhala" },
+                          { label: "English", value: "English" },
+                          { label: "Tamil", value: "Tamil" },
+                        ]}
+                      />
+                    </div>
+
+                    <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-5">
+                      <label className="block text-sm font-bold text-slate-700 mb-2">
+                        PDF Document
+                      </label>
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={(e) => setFile(e.target.files[0])}
+                        required
+                        className="block w-full text-sm text-slate-600"
+                      />
+                      <p className="text-xs text-slate-400 mt-2">
+                        Upload only PDF files
+                      </p>
+                    </div>
+
+                    <button className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 transition shadow-lg shadow-emerald-200">
+                      Upload PDF
+                    </button>
+                  </form>
                 </div>
               </div>
+            )}
 
-              <button
-                onClick={() => deleteTeacher(t._id)}
-                className="text-red-500 hover:text-red-700 font-bold px-3 py-1"
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
+            {activeTab === "teachers" && (
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-widest text-blue-600">
+                      Directory
+                    </p>
+                    <h2 className="text-2xl font-black text-slate-900">
+                      Current Professionals
+                    </h2>
+                  </div>
+                  <div className="text-sm text-slate-500 font-semibold">
+                    {teachers.length} professional{teachers.length !== 1 ? "s" : ""}
+                  </div>
+                </div>
 
-      <div className="max-w-7xl mx-auto bg-white p-8 rounded-3xl shadow-xl">
-        <h2 className="text-3xl font-black mb-8 text-gray-800">Manage Uploaded Files</h2>
+                <div className="p-6">
+                  {teachers.length === 0 ? (
+                    <EmptyState text="No professionals added yet." />
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {teachers.map((t) => (
+                        <div
+                          key={t._id}
+                          className="rounded-3xl border border-slate-200 overflow-hidden bg-slate-50 hover:shadow-lg transition"
+                        >
+                          <div className="h-28 bg-gradient-to-r from-blue-600 to-indigo-600" />
+                          <div className="px-6 pb-6 -mt-14">
+                            <img
+                              src={t.photo}
+                              alt={t.name}
+                              className="w-24 h-24 rounded-2xl object-cover border-4 border-white shadow-lg bg-white"
+                              onError={(e) => {
+                                e.target.src = "https://via.placeholder.com/200?text=No+Image";
+                              }}
+                            />
 
-        <div className="space-y-3">
-          {notes.map((n) => (
-            <div
-              key={n._id}
-              className="border-b py-4 flex justify-between items-center hover:bg-gray-50 transition px-4 rounded-xl"
-            >
-              <div>
-                <p className="font-bold text-gray-900 text-lg">{n.title}</p>
-                <p className="text-xs text-gray-500 font-semibold uppercase tracking-tight">
-                  <span className={n.category === "Note" ? "text-blue-600" : "text-red-600"}>
-                    {n.category}
-                  </span>{" "}
-                  • {n.subject?.name} ({n.subject?.level})
-                </p>
+                            <div className="mt-4 space-y-2">
+                              <h3 className="text-xl font-black text-slate-900">{t.name}</h3>
+                              <p className="inline-block text-xs font-black uppercase bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
+                                {t.subject}
+                              </p>
+                              <p className="text-sm text-slate-600 leading-relaxed min-h-[72px]">
+                                {t.description}
+                              </p>
+                              <div className="rounded-2xl bg-white border border-slate-200 px-4 py-3">
+                                <p className="text-xs uppercase font-bold tracking-widest text-slate-400">
+                                  Contact
+                                </p>
+                                <p className="font-bold text-slate-800">{t.contact}</p>
+                              </div>
+                            </div>
+
+                            <button
+                              onClick={() => deleteTeacher(t._id)}
+                              className="mt-5 w-full rounded-2xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white font-black py-3 transition"
+                            >
+                              Remove Professional
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
+            )}
 
-              <button
-                onClick={() => deleteNote(n._id)}
-                className="bg-red-50 text-red-500 font-bold py-2 px-4 rounded-lg hover:bg-red-500 hover:text-white transition"
-              >
-                Delete
-              </button>
-            </div>
-          ))}
+            {activeTab === "files" && (
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-widest text-emerald-600">
+                      Library
+                    </p>
+                    <h2 className="text-2xl font-black text-slate-900">Manage Uploaded Files</h2>
+                  </div>
+                  <div className="text-sm text-slate-500 font-semibold">
+                    {notes.length} file{notes.length !== 1 ? "s" : ""}
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  {notes.length === 0 ? (
+                    <EmptyState text="No notes or papers uploaded yet." />
+                  ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                      {notes.map((n) => (
+                        <div
+                          key={n._id}
+                          className="rounded-3xl border border-slate-200 bg-slate-50 p-5 hover:shadow-md transition"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-start gap-4 min-w-0">
+                              <div
+                                className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl shadow-sm ${
+                                  n.category === "Note"
+                                    ? "bg-blue-100 text-blue-700"
+                                    : "bg-rose-100 text-rose-700"
+                                }`}
+                              >
+                                {n.category === "Note" ? "📝" : "📄"}
+                              </div>
+
+                              <div className="min-w-0">
+                                <h3 className="text-lg font-black text-slate-900 truncate">
+                                  {n.title}
+                                </h3>
+                                <p className="text-sm text-slate-500 mt-1">
+                                  {n.subject?.name || "No Subject"} ({n.subject?.level || "N/A"})
+                                </p>
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                  <span
+                                    className={`text-xs font-black uppercase px-3 py-1 rounded-full ${
+                                      n.category === "Note"
+                                        ? "bg-blue-100 text-blue-700"
+                                        : "bg-rose-100 text-rose-700"
+                                    }`}
+                                  >
+                                    {n.category}
+                                  </span>
+                                  <span className="text-xs font-black uppercase px-3 py-1 rounded-full bg-slate-200 text-slate-700">
+                                    {n.medium}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <button
+                              onClick={() => deleteNote(n._id)}
+                              className="shrink-0 rounded-xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white font-black px-4 py-2 transition"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ title, value, color, icon }) {
+  const colorMap = {
+    blue: "from-blue-600 to-indigo-600",
+    emerald: "from-emerald-600 to-teal-600",
+    amber: "from-amber-500 to-orange-500",
+    rose: "from-rose-500 to-pink-600",
+  };
+
+  return (
+    <div className="rounded-3xl overflow-hidden shadow-sm border border-slate-200 bg-white">
+      <div className={`h-2 bg-gradient-to-r ${colorMap[color]}`} />
+      <div className="p-5 flex items-center justify-between">
+        <div>
+          <p className="text-sm font-bold uppercase tracking-widest text-slate-400">{title}</p>
+          <h3 className="text-3xl font-black text-slate-900 mt-2">{value}</h3>
+        </div>
+        <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center text-2xl">
+          {icon}
         </div>
       </div>
+    </div>
+  );
+}
+
+function TabButton({ active, onClick, label }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-5 py-3 rounded-2xl font-black transition ${
+        active
+          ? "bg-slate-900 text-white shadow-md"
+          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function InputField({ label, value, onChange, placeholder }) {
+  return (
+    <div>
+      <label className="block text-sm font-bold text-slate-700 mb-2">{label}</label>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500 focus:bg-white transition"
+        required
+      />
+    </div>
+  );
+}
+
+function SelectField({ label, value, onChange, options }) {
+  return (
+    <div>
+      <label className="block text-sm font-bold text-slate-700 mb-2">{label}</label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500 focus:bg-white transition"
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function EmptyState({ text }) {
+  return (
+    <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center">
+      <p className="text-slate-400 text-lg font-bold">{text}</p>
     </div>
   );
 }

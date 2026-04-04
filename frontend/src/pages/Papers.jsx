@@ -1,6 +1,97 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
+function SubjectCard({ sub, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="group relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 text-left shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+    >
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-rose-500 via-red-500 to-orange-400" />
+      <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-rose-100/50 blur-2xl transition-all duration-300 group-hover:bg-rose-200/70" />
+
+      <div className="relative">
+        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-2xl font-black text-rose-600 transition-all duration-300 group-hover:bg-rose-600 group-hover:text-white">
+          {sub.name.charAt(0)}
+        </div>
+
+        <h3 className="text-xl font-black text-slate-900 tracking-tight">
+          {sub.name}
+        </h3>
+
+        <p className="mt-2 text-sm font-semibold text-slate-500">
+          View available past papers
+        </p>
+
+        <div className="mt-5 inline-flex items-center gap-2 text-sm font-black text-rose-600">
+          Open Subject
+          <span className="transition-transform duration-300 group-hover:translate-x-1">
+            →
+          </span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function PaperCard({ paper }) {
+  return (
+    <div className="group relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+      <div className="h-1.5 bg-gradient-to-r from-rose-500 via-red-500 to-orange-400" />
+      <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-rose-100/50 blur-2xl transition-all duration-300 group-hover:bg-rose-200/70" />
+
+      <div className="relative p-7">
+        <div className="mb-5 flex items-center justify-between">
+          <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-black uppercase tracking-wide text-rose-700">
+            {paper.medium}
+          </span>
+
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-lg">
+            📄
+          </div>
+        </div>
+
+        <h3 className="min-h-[64px] text-2xl font-black leading-tight tracking-tight text-slate-900">
+          {paper.title}
+        </h3>
+
+        <p className="mt-3 text-sm font-semibold text-slate-500">
+          Practice with past papers and improve exam confidence.
+        </p>
+
+        <div className="mt-7 flex items-center justify-between">
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+            Exam Material
+          </div>
+
+          <a
+            href={paper.fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 text-sm font-black text-white transition-all duration-300 hover:bg-rose-700"
+          >
+            Open Paper
+            <span className="transition-transform duration-300 group-hover:translate-x-1">
+              →
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EmptyState({ text }) {
+  return (
+    <div className="col-span-full rounded-[2rem] border-2 border-dashed border-slate-200 bg-white px-6 py-20 text-center shadow-sm">
+      <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-2xl">
+        📭
+      </div>
+      <p className="text-xl font-bold italic text-slate-400">{text}</p>
+    </div>
+  );
+}
+
 export default function Papers() {
   const [subjects, setSubjects] = useState([]);
   const [papers, setPapers] = useState([]);
@@ -45,140 +136,141 @@ export default function Papers() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFBFB] p-6 md:p-12">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-12">
-          <div className="flex items-center space-x-2 text-sm text-red-300 font-bold uppercase tracking-widest mb-4">
-            <span
-              className="hover:text-red-600 cursor-pointer"
-              onClick={() => {
-                setSelectedLevel(null);
-                setSelectedSubject(null);
-              }}
-            >
-              Archives
-            </span>
+    <div className="min-h-screen bg-[linear-gradient(to_bottom,#fff8f8,white)] px-4 py-8 md:px-8 md:py-12">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-12 overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-sm">
+          <div className="relative overflow-hidden bg-gradient-to-r from-rose-600 via-red-600 to-slate-900 px-6 py-10 text-white md:px-10 md:py-12">
+            <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
+            <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-orange-300/10 blur-3xl" />
 
-            {selectedLevel && (
-              <>
-                <span>/</span>
-                <span className="text-gray-400">{selectedLevel}</span>
-              </>
-            )}
+            <div className="relative">
+              <div className="mb-4 flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.25em] text-rose-100">
+                <span
+                  className="cursor-pointer transition hover:text-white"
+                  onClick={() => {
+                    setSelectedLevel(null);
+                    setSelectedSubject(null);
+                  }}
+                >
+                  Archives
+                </span>
 
-            {selectedSubject && (
-              <>
-                <span>/</span>
-                <span className="text-red-600">{selectedSubject.name}</span>
-              </>
-            )}
-          </div>
+                {selectedLevel && (
+                  <>
+                    <span>/</span>
+                    <span>{selectedLevel}</span>
+                  </>
+                )}
 
-          <div className="flex justify-between items-end">
-            <h1 className="text-5xl font-black text-gray-900 tracking-tighter">
-              {selectedSubject
-                ? `${selectedSubject.name} Papers`
-                : selectedLevel
-                ? `${selectedLevel} Papers`
-                : "Past Papers"}
-            </h1>
+                {selectedSubject && (
+                  <>
+                    <span>/</span>
+                    <span className="text-white">{selectedSubject.name}</span>
+                  </>
+                )}
+              </div>
 
-            {selectedLevel && (
-              <button
-                onClick={goBack}
-                className="bg-white border-2 border-gray-100 px-6 py-2 rounded-xl font-black text-gray-600 hover:border-red-600 hover:text-red-600 transition-all shadow-sm"
-              >
-                ← Go Back
-              </button>
-            )}
+              <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p className="text-sm font-black uppercase tracking-[0.25em] text-rose-100">
+                    Exam Preparation
+                  </p>
+
+                  <h1 className="mt-3 text-4xl font-black tracking-tight md:text-6xl">
+                    {selectedSubject
+                      ? `${selectedSubject.name} Papers`
+                      : selectedLevel
+                      ? `${selectedLevel} Papers`
+                      : "Past Papers"}
+                  </h1>
+
+                  <p className="mt-4 max-w-2xl text-base text-rose-100 md:text-lg">
+                    Practice smarter with organized past papers for Sri Lankan
+                    GCE O/L and A/L students.
+                  </p>
+                </div>
+
+                {selectedLevel && (
+                  <button
+                    onClick={goBack}
+                    className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-6 py-3 font-black text-white backdrop-blur-md transition hover:bg-white/20"
+                  >
+                    ← Go Back
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
         {!selectedLevel && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+            <button
               onClick={() => setSelectedLevel("O/L")}
-              className="group relative h-64 bg-red-600 rounded-[2rem] shadow-2xl overflow-hidden cursor-pointer transform transition hover:-translate-y-2"
+              className="group relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-rose-500 via-red-600 to-red-800 p-10 text-left text-white shadow-2xl transition-all duration-300 hover:-translate-y-2"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-red-400 to-red-800 opacity-90"></div>
-              <div className="relative z-10 h-full flex flex-col justify-center items-center text-white text-center px-4">
-                <h2 className="text-6xl font-black">GCE O/L</h2>
-                <p className="font-bold text-red-100 mt-2">Official Past Paper Collections</p>
+              <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
+              <div className="relative">
+                <p className="text-sm font-black uppercase tracking-[0.25em] text-rose-100">
+                  Ordinary Level
+                </p>
+                <h2 className="mt-4 text-5xl font-black tracking-tight">GCE O/L</h2>
+                <p className="mt-3 max-w-md text-lg text-rose-100">
+                  Explore O/L past papers for focused exam preparation.
+                </p>
+                <div className="mt-8 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-black">
+                  Enter Papers
+                  <span className="transition-transform duration-300 group-hover:translate-x-1">
+                    →
+                  </span>
+                </div>
               </div>
-            </div>
+            </button>
 
-            <div
+            <button
               onClick={() => setSelectedLevel("A/L")}
-              className="group relative h-64 bg-red-900 rounded-[2rem] shadow-2xl overflow-hidden cursor-pointer transform transition hover:-translate-y-2"
+              className="group relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-red-700 via-rose-700 to-slate-900 p-10 text-left text-white shadow-2xl transition-all duration-300 hover:-translate-y-2"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-red-700 to-black opacity-90"></div>
-              <div className="relative z-10 h-full flex flex-col justify-center items-center text-white text-center px-4">
-                <h2 className="text-6xl font-black">GCE A/L</h2>
-                <p className="font-bold text-red-200 mt-2">Advanced Level Exam Papers</p>
+              <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
+              <div className="relative">
+                <p className="text-sm font-black uppercase tracking-[0.25em] text-red-100">
+                  Advanced Level
+                </p>
+                <h2 className="mt-4 text-5xl font-black tracking-tight">GCE A/L</h2>
+                <p className="mt-3 max-w-md text-lg text-red-100">
+                  Find advanced level exam papers in a clean digital archive.
+                </p>
+                <div className="mt-8 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-black">
+                  Enter Papers
+                  <span className="transition-transform duration-300 group-hover:translate-x-1">
+                    →
+                  </span>
+                </div>
               </div>
-            </div>
+            </button>
           </div>
         )}
 
         {selectedLevel && !selectedSubject && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {subjects
               .filter((s) => s.level === selectedLevel)
               .map((sub) => (
-                <button
+                <SubjectCard
                   key={sub._id}
+                  sub={sub}
                   onClick={() => setSelectedSubject(sub)}
-                  className="bg-white p-8 rounded-3xl shadow-sm border-2 border-transparent hover:border-red-600 hover:shadow-xl transition-all text-left group"
-                >
-                  <div className="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center mb-4 font-black group-hover:bg-red-600 group-hover:text-white transition-colors">
-                    {sub.name.charAt(0)}
-                  </div>
-                  <h3 className="text-xl font-black text-gray-800">{sub.name}</h3>
-                  <p className="text-sm text-gray-400 font-bold mt-1">Explore Papers</p>
-                </button>
+                />
               ))}
           </div>
         )}
 
         {selectedSubject && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 gap-7 md:grid-cols-2 xl:grid-cols-3">
             {papers.length > 0 ? (
-              papers.map((paper) => (
-                <div
-                  key={paper._id}
-                  className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden group hover:shadow-2xl transition-all"
-                >
-                  <div className="h-3 bg-red-600"></div>
-
-                  <div className="p-8">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="bg-red-50 text-red-600 text-xs font-black px-3 py-1 rounded-lg uppercase">
-                        {paper.medium}
-                      </span>
-                      <span className="text-gray-300 text-2xl font-bold">PDF</span>
-                    </div>
-
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6 leading-tight h-16 overflow-hidden uppercase tracking-tight">
-                      {paper.title}
-                    </h3>
-
-                    <a
-                      href={paper.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full bg-red-600 text-white text-center py-4 rounded-2xl font-black hover:bg-red-700 transition-colors block shadow-lg"
-                    >
-                      Open Paper
-                    </a>
-                  </div>
-                </div>
-              ))
+              papers.map((paper) => <PaperCard key={paper._id} paper={paper} />)
             ) : (
-              <div className="col-span-full py-20 text-center bg-white rounded-[3rem] border-4 border-dashed border-red-50">
-                <p className="text-gray-300 text-xl font-bold italic">
-                  No past papers found for this subject.
-                </p>
-              </div>
+              <EmptyState text="No past papers found for this subject." />
             )}
           </div>
         )}
