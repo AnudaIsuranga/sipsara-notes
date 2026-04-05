@@ -103,3 +103,15 @@ body {
 .auth-page-enter {
   animation: authFadeUp 0.7s ease-out both;
 }
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}

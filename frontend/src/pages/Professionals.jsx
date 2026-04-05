@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import {
+  PageHeaderSkeleton,
+  ProfessionalCardSkeleton,
+} from "../components/Skeletons";
 
 function ProfessionalCard({ teacher }) {
   return (
     <div className="group relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
       <div className="h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-400" />
-
       <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-blue-100/50 blur-2xl transition-all duration-300 group-hover:bg-blue-200/70" />
 
       <div className="relative">
@@ -69,9 +72,7 @@ function ProfessionalCard({ teacher }) {
               className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-black text-white transition-all duration-300 hover:bg-blue-700"
             >
               Call Now
-              <span className="transition-transform duration-300 group-hover:translate-x-1">
-                →
-              </span>
+              <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
             </a>
           </div>
         </div>
@@ -95,52 +96,66 @@ function EmptyState() {
 
 export default function Professionals() {
   const [teachers, setTeachers] = useState([]);
+  const [loadingTeachers, setLoadingTeachers] = useState(true);
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    axios
-      .get(`${API_URL}/api/teachers`)
-      .then((res) => setTeachers(res.data))
-      .catch((err) => console.error("Error fetching professionals:", err));
+    const fetchTeachers = async () => {
+      try {
+        setLoadingTeachers(true);
+        const res = await axios.get(`${API_URL}/api/teachers`);
+        setTeachers(res.data);
+      } catch (err) {
+        console.error("Error fetching professionals:", err);
+      } finally {
+        setLoadingTeachers(false);
+      }
+    };
+
+    fetchTeachers();
   }, [API_URL]);
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom,#f8fbff,white)] px-4 py-8 md:px-8 md:py-12">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-12 overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-sm">
-          <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 px-6 py-10 text-white md:px-10 md:py-14">
-            <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
-            <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-cyan-300/10 blur-3xl" />
+        {loadingTeachers ? (
+          <PageHeaderSkeleton theme="blue" />
+        ) : (
+          <div className="mb-12 overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-sm">
+            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 px-6 py-10 text-white md:px-10 md:py-14">
+              <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
+              <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-cyan-300/10 blur-3xl" />
 
-            <div className="relative">
-              <p className="text-sm font-black uppercase tracking-[0.25em] text-blue-100">
-                Professional Network
-              </p>
+              <div className="relative">
+                <p className="text-sm font-black uppercase tracking-[0.25em] text-blue-100">
+                  Professional Network
+                </p>
 
-              <h1 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">
-                Learn From The Best
-              </h1>
+                <h1 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">
+                  Learn From The Best
+                </h1>
 
-              <p className="mt-5 max-w-3xl text-base text-blue-100 md:text-lg leading-8">
-                Meet experienced lecturers and subject specialists who help students
-                succeed with expert guidance, trusted support, and high-quality
-                teaching experience.
-              </p>
+                <p className="mt-5 max-w-3xl text-base text-blue-100 md:text-lg leading-8">
+                  Meet experienced lecturers and subject specialists who help students
+                  succeed with expert guidance, trusted support, and high-quality
+                  teaching experience.
+                </p>
 
-              <div className="mt-8 flex flex-wrap gap-3">
-                <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white backdrop-blur-md">
-                  Verified Educators
-                </span>
-                <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white backdrop-blur-md">
-                  Subject Experts
-                </span>
-                <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white backdrop-blur-md">
-                  Student Focused
-                </span>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white backdrop-blur-md">
+                    Verified Educators
+                  </span>
+                  <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white backdrop-blur-md">
+                    Subject Experts
+                  </span>
+                  <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white backdrop-blur-md">
+                    Student Focused
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="mb-10 flex flex-col gap-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
           <div>
@@ -154,13 +169,19 @@ export default function Professionals() {
 
           <div className="inline-flex items-center gap-3 rounded-full bg-blue-50 px-5 py-3 text-sm font-black uppercase tracking-[0.15em] text-blue-700">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white text-xs">
-              {teachers.length}
+              {loadingTeachers ? "..." : teachers.length}
             </span>
             Total Professionals
           </div>
         </div>
 
-        {teachers.length > 0 ? (
+        {loadingTeachers ? (
+          <div className="grid grid-cols-1 gap-7 md:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <ProfessionalCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : teachers.length > 0 ? (
           <div className="grid grid-cols-1 gap-7 md:grid-cols-2 xl:grid-cols-3">
             {teachers.map((teacher) => (
               <ProfessionalCard key={teacher._id} teacher={teacher} />

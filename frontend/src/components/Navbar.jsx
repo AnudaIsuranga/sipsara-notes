@@ -2,16 +2,30 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 
+function ButtonSpinner() {
+  return (
+    <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-current/30 border-t-current" />
+  );
+}
+
 export default function Navbar() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    setMobileOpen(false);
-    navigate("/login");
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+
+    try {
+      setIsLoggingOut(true);
+      logout();
+      setMobileOpen(false);
+      navigate("/login");
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const closeMobile = () => setMobileOpen(false);
@@ -87,9 +101,21 @@ export default function Navbar() {
 
                 <button
                   onClick={handleLogout}
-                  className="ml-2 px-5 py-2.5 rounded-2xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white font-black transition"
+                  disabled={isLoggingOut}
+                  className={`ml-2 flex items-center justify-center gap-3 px-5 py-2.5 rounded-2xl font-black transition ${
+                    isLoggingOut
+                      ? "cursor-not-allowed bg-red-400 text-white"
+                      : "bg-red-50 text-red-600 hover:bg-red-600 hover:text-white"
+                  }`}
                 >
-                  Logout
+                  {isLoggingOut ? (
+                    <>
+                      <ButtonSpinner />
+                      Logging out...
+                    </>
+                  ) : (
+                    "Logout"
+                  )}
                 </button>
               </>
             ) : (
@@ -165,9 +191,21 @@ export default function Navbar() {
 
                     <button
                       onClick={handleLogout}
-                      className="w-full py-3 rounded-2xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white font-black transition"
+                      disabled={isLoggingOut}
+                      className={`flex w-full items-center justify-center gap-3 py-3 rounded-2xl font-black transition ${
+                        isLoggingOut
+                          ? "cursor-not-allowed bg-red-400 text-white"
+                          : "bg-red-50 text-red-600 hover:bg-red-600 hover:text-white"
+                      }`}
                     >
-                      Logout
+                      {isLoggingOut ? (
+                        <>
+                          <ButtonSpinner />
+                          Logging out...
+                        </>
+                      ) : (
+                        "Logout"
+                      )}
                     </button>
                   </div>
                 </>

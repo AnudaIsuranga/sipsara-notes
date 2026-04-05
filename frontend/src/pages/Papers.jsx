@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import {
+  PageHeaderSkeleton,
+  LevelCardSkeleton,
+  SubjectCardSkeleton,
+  ResourceCardSkeleton,
+} from "../components/Skeletons";
 
 function SubjectCard({ sub, onClick }) {
   return (
@@ -15,19 +21,12 @@ function SubjectCard({ sub, onClick }) {
           {sub.name.charAt(0)}
         </div>
 
-        <h3 className="text-xl font-black text-slate-900 tracking-tight">
-          {sub.name}
-        </h3>
-
-        <p className="mt-2 text-sm font-semibold text-slate-500">
-          View available past papers
-        </p>
+        <h3 className="text-xl font-black text-slate-900 tracking-tight">{sub.name}</h3>
+        <p className="mt-2 text-sm font-semibold text-slate-500">View available past papers</p>
 
         <div className="mt-5 inline-flex items-center gap-2 text-sm font-black text-rose-600">
           Open Subject
-          <span className="transition-transform duration-300 group-hover:translate-x-1">
-            →
-          </span>
+          <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
         </div>
       </div>
     </button>
@@ -71,9 +70,7 @@ function PaperCard({ paper }) {
             className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 text-sm font-black text-white transition-all duration-300 hover:bg-rose-700"
           >
             Open Paper
-            <span className="transition-transform duration-300 group-hover:translate-x-1">
-              →
-            </span>
+            <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
           </a>
         </div>
       </div>
@@ -97,16 +94,21 @@ export default function Papers() {
   const [papers, setPapers] = useState([]);
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
+  const [loadingSubjects, setLoadingSubjects] = useState(true);
+  const [loadingPapers, setLoadingPapers] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
+        setLoadingSubjects(true);
         const res = await axios.get(`${API_URL}/api/subjects`);
         setSubjects(res.data);
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoadingSubjects(false);
       }
     };
 
@@ -118,12 +120,15 @@ export default function Papers() {
 
     const fetchPapers = async () => {
       try {
+        setLoadingPapers(true);
         const res = await axios.get(
           `${API_URL}/api/notes?subjectId=${selectedSubject._id}&category=Paper`
         );
         setPapers(res.data);
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoadingPapers(false);
       }
     };
 
@@ -138,136 +143,153 @@ export default function Papers() {
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom,#fff8f8,white)] px-4 py-8 md:px-8 md:py-12">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-12 overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-sm">
-          <div className="relative overflow-hidden bg-gradient-to-r from-rose-600 via-red-600 to-slate-900 px-6 py-10 text-white md:px-10 md:py-12">
-            <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
-            <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-orange-300/10 blur-3xl" />
+        {loadingSubjects ? (
+          <PageHeaderSkeleton theme="rose" />
+        ) : (
+          <div className="mb-12 overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-sm">
+            <div className="relative overflow-hidden bg-gradient-to-r from-rose-600 via-red-600 to-slate-900 px-6 py-10 text-white md:px-10 md:py-12">
+              <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
+              <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-orange-300/10 blur-3xl" />
 
-            <div className="relative">
-              <div className="mb-4 flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.25em] text-rose-100">
-                <span
-                  className="cursor-pointer transition hover:text-white"
-                  onClick={() => {
-                    setSelectedLevel(null);
-                    setSelectedSubject(null);
-                  }}
-                >
-                  Archives
-                </span>
+              <div className="relative">
+                <div className="mb-4 flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.25em] text-rose-100">
+                  <span
+                    className="cursor-pointer transition hover:text-white"
+                    onClick={() => {
+                      setSelectedLevel(null);
+                      setSelectedSubject(null);
+                    }}
+                  >
+                    Archives
+                  </span>
 
-                {selectedLevel && (
-                  <>
-                    <span>/</span>
-                    <span>{selectedLevel}</span>
-                  </>
-                )}
+                  {selectedLevel && (
+                    <>
+                      <span>/</span>
+                      <span>{selectedLevel}</span>
+                    </>
+                  )}
 
-                {selectedSubject && (
-                  <>
-                    <span>/</span>
-                    <span className="text-white">{selectedSubject.name}</span>
-                  </>
-                )}
-              </div>
-
-              <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-                <div>
-                  <p className="text-sm font-black uppercase tracking-[0.25em] text-rose-100">
-                    Exam Preparation
-                  </p>
-
-                  <h1 className="mt-3 text-4xl font-black tracking-tight md:text-6xl">
-                    {selectedSubject
-                      ? `${selectedSubject.name} Papers`
-                      : selectedLevel
-                      ? `${selectedLevel} Papers`
-                      : "Past Papers"}
-                  </h1>
-
-                  <p className="mt-4 max-w-2xl text-base text-rose-100 md:text-lg">
-                    Practice smarter with organized past papers for Sri Lankan
-                    GCE O/L and A/L students.
-                  </p>
+                  {selectedSubject && (
+                    <>
+                      <span>/</span>
+                      <span className="text-white">{selectedSubject.name}</span>
+                    </>
+                  )}
                 </div>
 
-                {selectedLevel && (
-                  <button
-                    onClick={goBack}
-                    className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-6 py-3 font-black text-white backdrop-blur-md transition hover:bg-white/20"
-                  >
-                    ← Go Back
-                  </button>
-                )}
+                <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+                  <div>
+                    <p className="text-sm font-black uppercase tracking-[0.25em] text-rose-100">
+                      Exam Preparation
+                    </p>
+
+                    <h1 className="mt-3 text-4xl font-black tracking-tight md:text-6xl">
+                      {selectedSubject
+                        ? `${selectedSubject.name} Papers`
+                        : selectedLevel
+                        ? `${selectedLevel} Papers`
+                        : "Past Papers"}
+                    </h1>
+
+                    <p className="mt-4 max-w-2xl text-base text-rose-100 md:text-lg">
+                      Practice smarter with organized past papers for Sri Lankan
+                      GCE O/L and A/L students.
+                    </p>
+                  </div>
+
+                  {selectedLevel && (
+                    <button
+                      onClick={goBack}
+                      className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-6 py-3 font-black text-white backdrop-blur-md transition hover:bg-white/20"
+                    >
+                      ← Go Back
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {!selectedLevel && (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            <button
-              onClick={() => setSelectedLevel("O/L")}
-              className="group relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-rose-500 via-red-600 to-red-800 p-10 text-left text-white shadow-2xl transition-all duration-300 hover:-translate-y-2"
-            >
-              <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
-              <div className="relative">
-                <p className="text-sm font-black uppercase tracking-[0.25em] text-rose-100">
-                  Ordinary Level
-                </p>
-                <h2 className="mt-4 text-5xl font-black tracking-tight">GCE O/L</h2>
-                <p className="mt-3 max-w-md text-lg text-rose-100">
-                  Explore O/L past papers for focused exam preparation.
-                </p>
-                <div className="mt-8 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-black">
-                  Enter Papers
-                  <span className="transition-transform duration-300 group-hover:translate-x-1">
-                    →
-                  </span>
-                </div>
-              </div>
-            </button>
+            {loadingSubjects ? (
+              <>
+                <LevelCardSkeleton />
+                <LevelCardSkeleton />
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setSelectedLevel("O/L")}
+                  className="group relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-rose-500 via-red-600 to-red-800 p-10 text-left text-white shadow-2xl transition-all duration-300 hover:-translate-y-2"
+                >
+                  <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
+                  <div className="relative">
+                    <p className="text-sm font-black uppercase tracking-[0.25em] text-rose-100">
+                      Ordinary Level
+                    </p>
+                    <h2 className="mt-4 text-5xl font-black tracking-tight">GCE O/L</h2>
+                    <p className="mt-3 max-w-md text-lg text-rose-100">
+                      Explore O/L past papers for focused exam preparation.
+                    </p>
+                    <div className="mt-8 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-black">
+                      Enter Papers
+                      <span className="transition-transform duration-300 group-hover:translate-x-1">
+                        →
+                      </span>
+                    </div>
+                  </div>
+                </button>
 
-            <button
-              onClick={() => setSelectedLevel("A/L")}
-              className="group relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-red-700 via-rose-700 to-slate-900 p-10 text-left text-white shadow-2xl transition-all duration-300 hover:-translate-y-2"
-            >
-              <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
-              <div className="relative">
-                <p className="text-sm font-black uppercase tracking-[0.25em] text-red-100">
-                  Advanced Level
-                </p>
-                <h2 className="mt-4 text-5xl font-black tracking-tight">GCE A/L</h2>
-                <p className="mt-3 max-w-md text-lg text-red-100">
-                  Find advanced level exam papers in a clean digital archive.
-                </p>
-                <div className="mt-8 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-black">
-                  Enter Papers
-                  <span className="transition-transform duration-300 group-hover:translate-x-1">
-                    →
-                  </span>
-                </div>
-              </div>
-            </button>
+                <button
+                  onClick={() => setSelectedLevel("A/L")}
+                  className="group relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-red-700 via-rose-700 to-slate-900 p-10 text-left text-white shadow-2xl transition-all duration-300 hover:-translate-y-2"
+                >
+                  <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
+                  <div className="relative">
+                    <p className="text-sm font-black uppercase tracking-[0.25em] text-red-100">
+                      Advanced Level
+                    </p>
+                    <h2 className="mt-4 text-5xl font-black tracking-tight">GCE A/L</h2>
+                    <p className="mt-3 max-w-md text-lg text-red-100">
+                      Find advanced level exam papers in a clean digital archive.
+                    </p>
+                    <div className="mt-8 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-black">
+                      Enter Papers
+                      <span className="transition-transform duration-300 group-hover:translate-x-1">
+                        →
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              </>
+            )}
           </div>
         )}
 
         {selectedLevel && !selectedSubject && (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {subjects
-              .filter((s) => s.level === selectedLevel)
-              .map((sub) => (
-                <SubjectCard
-                  key={sub._id}
-                  sub={sub}
-                  onClick={() => setSelectedSubject(sub)}
-                />
-              ))}
+            {loadingSubjects
+              ? Array.from({ length: 8 }).map((_, i) => <SubjectCardSkeleton key={i} />)
+              : subjects
+                  .filter((s) => s.level === selectedLevel)
+                  .map((sub) => (
+                    <SubjectCard
+                      key={sub._id}
+                      sub={sub}
+                      onClick={() => setSelectedSubject(sub)}
+                    />
+                  ))}
           </div>
         )}
 
         {selectedSubject && (
           <div className="grid grid-cols-1 gap-7 md:grid-cols-2 xl:grid-cols-3">
-            {papers.length > 0 ? (
+            {loadingPapers ? (
+              Array.from({ length: 6 }).map((_, i) => <ResourceCardSkeleton key={i} />)
+            ) : papers.length > 0 ? (
               papers.map((paper) => <PaperCard key={paper._id} paper={paper} />)
             ) : (
               <EmptyState text="No past papers found for this subject." />

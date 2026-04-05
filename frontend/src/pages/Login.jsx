@@ -1,6 +1,7 @@
 import { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
+import toast from "react-hot-toast";
 import { AuthContext } from "../context/AuthContext";
 
 function InfoCard({ icon, title, text }) {
@@ -46,10 +47,17 @@ function InputField({
   );
 }
 
+function ButtonSpinner() {
+  return (
+    <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+  );
+}
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -57,17 +65,24 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
 
     try {
+      setIsLoading(true);
+
       const response = await axios.post(`${API_URL}/api/auth/login`, {
         email,
         password,
       });
 
       login(response.data);
+      toast.success("Welcome back!");
       navigate("/");
     } catch (error) {
-      alert(error.response?.data?.message || "Login failed");
+      console.error("Login error:", error);
+      toast.error(error.response?.data?.message || "Login failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -162,9 +177,21 @@ export default function Login() {
 
                 <button
                   type="submit"
-                  className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 text-lg font-black text-white shadow-lg shadow-blue-200 transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700"
+                  disabled={isLoading}
+                  className={`flex w-full items-center justify-center gap-3 rounded-2xl px-6 py-4 text-lg font-black text-white shadow-lg shadow-blue-200 transition-all duration-300 ${
+                    isLoading
+                      ? "cursor-not-allowed bg-gradient-to-r from-blue-400 to-indigo-400"
+                      : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700"
+                  }`}
                 >
-                  Login
+                  {isLoading ? (
+                    <>
+                      <ButtonSpinner />
+                      Logging in...
+                    </>
+                  ) : (
+                    "Login"
+                  )}
                 </button>
               </form>
 

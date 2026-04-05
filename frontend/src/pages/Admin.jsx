@@ -1,7 +1,15 @@
+import { DashboardStatSkeleton } from "../components/Skeletons";
 import { useState, useEffect, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import toast from "react-hot-toast";
 import { AuthContext } from "../context/AuthContext";
+
+function ButtonSpinner() {
+  return (
+    <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+  );
+}
 
 export default function Admin() {
   const { user } = useContext(AuthContext);
@@ -29,6 +37,11 @@ export default function Admin() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [activeTab, setActiveTab] = useState("upload");
   const [loading, setLoading] = useState(true);
+
+  const [isUploadingNote, setIsUploadingNote] = useState(false);
+  const [isUploadingTeacher, setIsUploadingTeacher] = useState(false);
+  const [deletingTeacherId, setDeletingTeacherId] = useState(null);
+  const [deletingNoteId, setDeletingNoteId] = useState(null);
 
   useEffect(() => {
     if (!user || user.role !== "admin") {
@@ -58,6 +71,7 @@ export default function Admin() {
         });
       } catch (err) {
         console.error("Fetch error:", err);
+        toast.error("Failed to load dashboard data");
       } finally {
         setLoading(false);
       }
@@ -75,9 +89,10 @@ export default function Admin() {
 
   const handleNoteUpload = async (e) => {
     e.preventDefault();
+    if (isUploadingNote) return;
 
     if (!file) {
-      alert("Please choose a PDF file.");
+      toast.error("Please choose a PDF file.");
       return;
     }
 
@@ -88,7 +103,10 @@ export default function Admin() {
     fd.append("subject", selectedSubject);
     fd.append("file", file);
 
+    const uploadToast = toast.loading("Uploading PDF...");
+
     try {
+      setIsUploadingNote(true);
       const token = localStorage.getItem("token");
 
       await axios.post(`${API_URL}/api/notes/add`, fd, {
@@ -98,7 +116,7 @@ export default function Admin() {
         },
       });
 
-      alert("PDF uploaded successfully!");
+      toast.success("PDF uploaded successfully!", { id: uploadToast });
       setTitle("");
       setCategory("Note");
       setMedium("Sinhala");
@@ -106,15 +124,20 @@ export default function Admin() {
       setRefreshTrigger((p) => p + 1);
     } catch (err) {
       console.error("PDF upload error:", err);
-      alert(err.response?.data?.message || "PDF upload failed");
+      toast.error(err.response?.data?.message || "PDF upload failed", {
+        id: uploadToast,
+      });
+    } finally {
+      setIsUploadingNote(false);
     }
   };
 
   const handleTeacherUpload = async (e) => {
     e.preventDefault();
+    if (isUploadingTeacher) return;
 
     if (!tPhoto) {
-      alert("Please choose a teacher photo.");
+      toast.error("Please choose a teacher photo.");
       return;
     }
 
@@ -125,7 +148,10 @@ export default function Admin() {
     fd.append("description", tDesc);
     fd.append("photo", tPhoto);
 
+    const uploadToast = toast.loading("Saving professional...");
+
     try {
+      setIsUploadingTeacher(true);
       const token = localStorage.getItem("token");
 
       await axios.post(`${API_URL}/api/teachers/add`, fd, {
@@ -135,7 +161,7 @@ export default function Admin() {
         },
       });
 
-      alert("Professional added successfully!");
+      toast.success("Professional added successfully!", { id: uploadToast });
       setTName("");
       setTSubject("");
       setTContact("");
@@ -144,41 +170,63 @@ export default function Admin() {
       setRefreshTrigger((p) => p + 1);
     } catch (err) {
       console.error("Teacher add error:", err);
-      alert(err.response?.data?.message || "Failed to add professional");
+      toast.error(err.response?.data?.message || "Failed to add professional", {
+        id: uploadToast,
+      });
+    } finally {
+      setIsUploadingTeacher(false);
     }
   };
 
   const deleteTeacher = async (id) => {
+    if (deletingTeacherId) return;
     if (!window.confirm("Remove this professional?")) return;
 
+    const deleteToast = toast.loading("Removing professional...");
+
     try {
+      setDeletingTeacherId(id);
       const token = localStorage.getItem("token");
 
       await axios.delete(`${API_URL}/api/teachers/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      toast.success("Professional removed successfully!", { id: deleteToast });
       setRefreshTrigger((p) => p + 1);
     } catch (err) {
       console.error("Delete teacher error:", err);
-      alert(err.response?.data?.message || "Delete failed");
+      toast.error(err.response?.data?.message || "Delete failed", {
+        id: deleteToast,
+      });
+    } finally {
+      setDeletingTeacherId(null);
     }
   };
 
   const deleteNote = async (id) => {
+    if (deletingNoteId) return;
     if (!window.confirm("Delete this file permanently?")) return;
 
+    const deleteToast = toast.loading("Deleting file...");
+
     try {
+      setDeletingNoteId(id);
       const token = localStorage.getItem("token");
 
       await axios.delete(`${API_URL}/api/notes/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      toast.success("File deleted successfully!", { id: deleteToast });
       setRefreshTrigger((p) => p + 1);
     } catch (err) {
       console.error("Delete note error:", err);
-      alert(err.response?.data?.message || "Delete failed");
+      toast.error(err.response?.data?.message || "Delete failed", {
+        id: deleteToast,
+      });
+    } finally {
+      setDeletingNoteId(null);
     }
   };
 
@@ -211,29 +259,25 @@ export default function Admin() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-          <StatCard title="Total Subjects" value={subjects.length} color="blue" icon="📚" />
-          <StatCard title="Total Professionals" value={teachers.length} color="emerald" icon="👨‍🏫" />
-          <StatCard title="Total Notes" value={noteCount} color="amber" icon="📝" />
-          <StatCard title="Total Papers" value={paperCount} color="rose" icon="📄" />
-        </div>
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <DashboardStatSkeleton key={i} />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+            <StatCard title="Total Subjects" value={subjects.length} color="blue" icon="📚" />
+            <StatCard title="Total Professionals" value={teachers.length} color="emerald" icon="👨‍🏫" />
+            <StatCard title="Total Notes" value={noteCount} color="amber" icon="📝" />
+            <StatCard title="Total Papers" value={paperCount} color="rose" icon="📄" />
+          </div>
+        )}
 
         <div className="bg-white rounded-3xl p-3 shadow-sm border border-slate-200 flex flex-wrap gap-3">
-          <TabButton
-            active={activeTab === "upload"}
-            onClick={() => setActiveTab("upload")}
-            label="Upload Center"
-          />
-          <TabButton
-            active={activeTab === "teachers"}
-            onClick={() => setActiveTab("teachers")}
-            label="Manage Professionals"
-          />
-          <TabButton
-            active={activeTab === "files"}
-            onClick={() => setActiveTab("files")}
-            label="Manage Files"
-          />
+          <TabButton active={activeTab === "upload"} onClick={() => setActiveTab("upload")} label="Upload Center" />
+          <TabButton active={activeTab === "teachers"} onClick={() => setActiveTab("teachers")} label="Manage Professionals" />
+          <TabButton active={activeTab === "files"} onClick={() => setActiveTab("files")} label="Manage Files" />
         </div>
 
         {loading ? (
@@ -253,26 +297,9 @@ export default function Admin() {
                   </div>
 
                   <form onSubmit={handleTeacherUpload} className="p-6 space-y-5">
-                    <InputField
-                      label="Lecturer Name"
-                      value={tName}
-                      onChange={setTName}
-                      placeholder="Enter lecturer name"
-                    />
-
-                    <InputField
-                      label="Subject Specialty"
-                      value={tSubject}
-                      onChange={setTSubject}
-                      placeholder="Ex: Combined Maths"
-                    />
-
-                    <InputField
-                      label="Contact Phone"
-                      value={tContact}
-                      onChange={setTContact}
-                      placeholder="Enter contact number"
-                    />
+                    <InputField label="Lecturer Name" value={tName} onChange={setTName} placeholder="Enter lecturer name" />
+                    <InputField label="Subject Specialty" value={tSubject} onChange={setTSubject} placeholder="Ex: Combined Maths" />
+                    <InputField label="Contact Phone" value={tContact} onChange={setTContact} placeholder="Enter contact number" />
 
                     <div>
                       <label className="block text-sm font-bold text-slate-700 mb-2">
@@ -303,8 +330,22 @@ export default function Admin() {
                       </p>
                     </div>
 
-                    <button className="w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black py-4 transition shadow-lg shadow-blue-200">
-                      Save Professional
+                    <button
+                      disabled={isUploadingTeacher}
+                      className={`flex w-full items-center justify-center gap-3 rounded-2xl py-4 text-xl font-black text-white transition ${
+                        isUploadingTeacher
+                          ? "cursor-not-allowed bg-blue-400"
+                          : "bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200"
+                      }`}
+                    >
+                      {isUploadingTeacher ? (
+                        <>
+                          <ButtonSpinner />
+                          Saving...
+                        </>
+                      ) : (
+                        "Save Professional"
+                      )}
                     </button>
                   </form>
                 </div>
@@ -318,12 +359,7 @@ export default function Admin() {
                   </div>
 
                   <form onSubmit={handleNoteUpload} className="p-6 space-y-5">
-                    <InputField
-                      label="File Title"
-                      value={title}
-                      onChange={setTitle}
-                      placeholder="Enter document title"
-                    />
+                    <InputField label="File Title" value={title} onChange={setTitle} placeholder="Enter document title" />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <SelectField
@@ -398,8 +434,22 @@ export default function Admin() {
                       </p>
                     </div>
 
-                    <button className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 transition shadow-lg shadow-emerald-200">
-                      Upload PDF
+                    <button
+                      disabled={isUploadingNote}
+                      className={`flex w-full items-center justify-center gap-3 rounded-2xl py-4 text-xl font-black text-white transition ${
+                        isUploadingNote
+                          ? "cursor-not-allowed bg-emerald-400"
+                          : "bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200"
+                      }`}
+                    >
+                      {isUploadingNote ? (
+                        <>
+                          <ButtonSpinner />
+                          Uploading...
+                        </>
+                      ) : (
+                        "Upload PDF"
+                      )}
                     </button>
                   </form>
                 </div>
@@ -461,9 +511,21 @@ export default function Admin() {
 
                             <button
                               onClick={() => deleteTeacher(t._id)}
-                              className="mt-5 w-full rounded-2xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white font-black py-3 transition"
+                              disabled={deletingTeacherId === t._id}
+                              className={`mt-5 flex w-full items-center justify-center gap-3 rounded-2xl py-3 font-black transition ${
+                                deletingTeacherId === t._id
+                                  ? "cursor-not-allowed bg-red-400 text-white"
+                                  : "bg-red-50 text-red-600 hover:bg-red-600 hover:text-white"
+                              }`}
                             >
-                              Remove Professional
+                              {deletingTeacherId === t._id ? (
+                                <>
+                                  <ButtonSpinner />
+                                  Removing...
+                                </>
+                              ) : (
+                                "Remove Professional"
+                              )}
                             </button>
                           </div>
                         </div>
@@ -536,9 +598,14 @@ export default function Admin() {
 
                             <button
                               onClick={() => deleteNote(n._id)}
-                              className="shrink-0 rounded-xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white font-black px-4 py-2 transition"
+                              disabled={deletingNoteId === n._id}
+                              className={`shrink-0 rounded-xl px-4 py-2 font-black transition ${
+                                deletingNoteId === n._id
+                                  ? "cursor-not-allowed bg-red-400 text-white"
+                                  : "bg-red-50 text-red-600 hover:bg-red-600 hover:text-white"
+                              }`}
                             >
-                              Delete
+                              {deletingNoteId === n._id ? "Deleting..." : "Delete"}
                             </button>
                           </div>
                         </div>
